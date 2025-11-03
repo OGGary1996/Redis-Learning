@@ -11,6 +11,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/*
+* 本测试方法演示Jedis基本操作，不使用连接池，而是直接创建Jedis实例
+* 注意：这种方式不适合生产环境，仅用于学习和测试目的
+*     1. 频繁创建和关闭Jedis实例会带来非常大的性能开销
+*     2. Jedis实例不是线程安全的，不能在多线程环境下共享使用
+*     3. 如果要使用Jedis，推荐使用连接池，详见JedisPoolTest.java
+* */
+
 public class JedisTest {
     private Jedis jedis;
 

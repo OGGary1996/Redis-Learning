@@ -9,6 +9,11 @@ import redis.clients.jedis.JedisPool;
 
 import java.util.List;
 
+/*
+* 本测试类用于测试Jedis连接池的使用，以及List和Set类型的数据操作
+* 连接池的配置在JedisConnectionFactory.java中完成
+* 每次测试前通过连接池获取Jedis实例，测试后关闭连接
+* */
 public class JedisPoolTest {
     private static Jedis jedis;
 
