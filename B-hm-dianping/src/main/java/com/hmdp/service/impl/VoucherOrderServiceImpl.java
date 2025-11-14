@@ -6,9 +6,11 @@ import com.hmdp.mapper.VoucherOrderMapper;
 import com.hmdp.service.IVoucherOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmdp.utils.RedisIdWorker;
+import com.hmdp.utils.SimpleRedisLock;
 import com.hmdp.utils.UserHolder;
 import com.hmdp.utils.UserMutexManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,14 +23,16 @@ import java.time.LocalDateTime;
  */
 @Service
 public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, VoucherOrder> implements IVoucherOrderService {
-    private final UserMutexManager userMutexManager;
+    // private final UserMutexManager userMutexManager;
+    // 优化为分布式锁, new SimpleRedisLock
+    private final StringRedisTemplate stringRedisTemplate;
     private final SeckillVoucherServiceImpl seckillVoucherService;
     private final RedisIdWorker redisIdWorker;
     @Autowired
-    public VoucherOrderServiceImpl(SeckillVoucherServiceImpl seckillVoucherService, RedisIdWorker redisIdWorker, UserMutexManager userMutexManager) {
+    public VoucherOrderServiceImpl(SeckillVoucherServiceImpl seckillVoucherService, RedisIdWorker redisIdWorker, StringRedisTemplate stringRedisTemplate) {
         this.seckillVoucherService = seckillVoucherService;
         this.redisIdWorker = redisIdWorker;
-        this.userMutexManager = userMutexManager;
+        this.stringRedisTemplate = stringRedisTemplate;
     }
 
     /*
@@ -58,8 +62,15 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         // 判断一人一单 + 减库存 + 创建订单的操作需要放在同一个锁中
         // 用户Id, 从ThreadLocal中获取当前用户
         Long userId = UserHolder.getUser().getId();
-        Object userLock = userMutexManager.getUserLock(userId);
-        synchronized (userLock) {
+
+        // 使用分布式锁的方式解决一人一单问题
+        SimpleRedisLock redisLock = new SimpleRedisLock("name:" + userId, stringRedisTemplate);
+        boolean isLock = redisLock.tryLock(20); // 尝试获取锁，1000秒超时
+        if (!isLock){ // 获取锁失败，说明已经有一个线程在为该用户创建订单
+            throw new RuntimeException("不允许重复下单！");
+        }
+        // 获取锁成功，进入下单流程
+        try {
             // 4.1 统计当前用户的订单数量
             Long count = query().eq("user_id", userId).eq("voucher_id", voucherId).count();
             // 4.2 判断是否已经购买过
@@ -86,6 +97,9 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
             voucherOrder.setUserId(userId);
             voucherOrder.setVoucherId(voucherId);
             save(voucherOrder);
+        }finally {
+            // 释放锁
+            redisLock.unlock();
         }
     }
 }

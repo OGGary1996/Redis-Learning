@@ -13,6 +13,10 @@ import java.util.concurrent.ConcurrentHashMap;
 *  3. 如果不存在, 使用提供的映射函数计算一个新的value, 将其与key关联, 并返回新的value
 *  4. 该方法是原子操作, 在多线程环境下可以
 * */
+
+// 由于本方式仅适用于单实例部署, 多实例部署下无法保证全局唯一锁, 因此弃用
+// 优化为基于Redis的分布式锁，详见ILock.java
+@Deprecated
 @Component
 public class UserMutexManager {
     private final ConcurrentHashMap<Long , Object> userLocks = new ConcurrentHashMap<>();
