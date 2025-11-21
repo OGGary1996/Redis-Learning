@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
 
+import java.util.List;
+
 /**
  * <p>
  * 前端控制器
@@ -44,7 +46,7 @@ public class ShopController {
     @PostMapping
     public Result saveShop(@RequestBody Shop shop) {
         // 写入数据库
-        shopService.save(shop);
+        shopService.saveShop(shop);
         // 返回店铺id
         return Result.ok(shop.getId());
     }
@@ -70,14 +72,22 @@ public class ShopController {
     @GetMapping("/of/type")
     public Result queryShopByType(
             @RequestParam("typeId") Integer typeId,
-            @RequestParam(value = "current", defaultValue = "1") Integer current
+            @RequestParam(value = "current", defaultValue = "1") Integer current,
+            @RequestParam(value = "x" , required = false) Double x,
+            @RequestParam(value = "y" , required = false) Double y
     ) {
-        // 根据类型分页查询
-        Page<Shop> page = shopService.query()
-                .eq("type_id", typeId)
-                .page(new Page<>(current, SystemConstants.DEFAULT_PAGE_SIZE));
-        // 返回数据
-        return Result.ok(page.getRecords());
+        // 1. 判断是否需要根据坐标查询，如果x，y为空，则不需要根据坐标查询
+        // 表示为普通条件分页查询
+        if (x == null || y == null) {
+            // 不需要坐标查询，按数据库普通分页查询即可
+            Page<Shop> shopPage = shopService.query()
+                    .eq("type_id", typeId)
+                    .page(new Page<>(current, SystemConstants.MAX_PAGE_SIZE));
+            return Result.ok(shopPage);
+        }
+
+        List<Shop> shops= shopService.queryShopByType(typeId, current, x, y);
+        return Result.ok(shops);
     }
 
     /**

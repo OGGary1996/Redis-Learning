@@ -13,6 +13,7 @@ import com.hmdp.service.IUserService;
 import com.hmdp.utils.RedisConstants;
 import com.hmdp.utils.RegexUtils;
 import com.hmdp.utils.SystemConstants;
+import com.hmdp.utils.UserHolder;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -172,6 +173,34 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         log.debug("用户信息Redis过期时间设置成功，key：{}", userKey);
         // 返回token，其实是返回key，通过这个key可以获取到用户信息
         return token;
+    }
+
+
+    /*
+    * 查询id所在用户简介页面用于显示Blog和共同关注列表
+    * 流程：
+    *  1. 根据id查询User对象，转换为UserDTO
+    *  2. 根据currentUserId查询follow:{id} Set中是否存在
+    *  3. 如果存在，则说明已经关注了，设置isFollowed 为true
+    *  4. 如果不存在，则说明未关注，设置isFollowed 为false
+    * */
+    @Override
+    public UserDTO queryByUserId(Long id) {
+        // 1. 根据id查询User对象，转换为UserDTO
+        User user = getById(id);
+        UserDTO userDTO = new UserDTO();
+        BeanUtils.copyProperties(user, userDTO);
+        // 2. 根据currentUserId查询follow:{id} Set中是否存在
+        Long currentUserId = UserHolder.getUser().getId();
+        Boolean isMember = stringRedisTemplate.opsForSet().isMember(RedisConstants.USER_FOLLOW_KEY + currentUserId, id.toString());
+        if (Boolean.TRUE.equals(isMember)) {
+            // 3. 如果存在，则说明已经关注了，设置isFollowed 为true
+            userDTO.setIsFollowed(true);
+        }else{
+            // 4. 如果不存在，则说明未关注，设置isFollowed 为false
+            userDTO.setIsFollowed(false);
+        }
+        return userDTO;
     }
 
 }

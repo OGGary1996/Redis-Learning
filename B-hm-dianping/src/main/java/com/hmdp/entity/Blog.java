@@ -15,9 +15,6 @@ import java.time.LocalDateTime;
  * <p>
  * 
  * </p>
- *
- * @author 虎哥
- * @since 2021-12-22
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -42,16 +39,19 @@ public class Blog implements Serializable {
     private Long userId;
     /**
      * 用户图标
+     * @TableField(exist = false)  表示该字段在数据库中不存在，仅用于实体类中
      */
     @TableField(exist = false)
     private String icon;
     /**
      * 用户姓名
+     * @TableField(exist = false)  表示该字段在数据库中不存在，仅用于实体类中
      */
     @TableField(exist = false)
     private String name;
     /**
      * 是否点赞过了
+     * @TableField(exist = false)  表示该字段在数据库中不存在，仅用于实体类中
      */
     @TableField(exist = false)
     private Boolean isLike;
@@ -90,6 +90,4 @@ public class Blog implements Serializable {
      * 更新时间
      */
     private LocalDateTime updateTime;
-
-
 }

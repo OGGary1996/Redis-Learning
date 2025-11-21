@@ -3,6 +3,7 @@ package com.hmdp.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.hmdp.dto.LoginFormDTO;
 import com.hmdp.dto.Result;
+import com.hmdp.dto.UserDTO;
 import com.hmdp.entity.User;
 import jakarta.servlet.http.HttpSession;
 
@@ -39,4 +40,9 @@ public interface IUserService extends IService<User> {
     * */
 //    void login(LoginFormDTO loginForm, HttpSession session);
     String login(LoginFormDTO loginForm);
+
+    /*
+    * 查询id所在用户简介页面用于显示Blog和共同关注列表
+    * */
+    UserDTO queryByUserId(Long id);
 }

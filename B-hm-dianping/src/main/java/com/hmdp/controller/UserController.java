@@ -110,4 +110,13 @@ public class UserController {
         // 返回
         return Result.ok(info);
     }
+
+    /*
+    * 查询id所在用户简介页面用于显示Blog和共同关注列表
+    * */
+    @GetMapping("/{id}")
+    public Result queryByUserId(@PathVariable("id") Long id) {
+        UserDTO userDTO = userService.queryByUserId(id);
+        return Result.ok(userDTO);
+    }
 }

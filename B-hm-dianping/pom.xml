@@ -67,6 +67,13 @@
             <version>2.1.1</version>
             <scope>compile</scope>
         </dependency>
+
+        <!-- Redission -->
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson-spring-boot-starter</artifactId>
+            <version>3.23.5</version>
+        </dependency>
     </dependencies>
 
     <build>

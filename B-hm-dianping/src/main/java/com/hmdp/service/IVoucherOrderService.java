@@ -13,5 +13,5 @@ public interface IVoucherOrderService extends IService<VoucherOrder> {
     /*
     * 新增秒杀订单记录
     * */
-    void seckillVoucher(Long voucherId);
+    Long seckillVoucher(Long voucherId);
 }
