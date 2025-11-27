@@ -3,6 +3,10 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+/**/src/main/resources/application-dev.yaml
+/**/src/main/resources/application-prod.yaml
+/**/src/main/resources/redisson-dev.yaml
+/**/src/main/resources/redisson-prod.yaml
 
 ### STS ###
 .apt_generated
